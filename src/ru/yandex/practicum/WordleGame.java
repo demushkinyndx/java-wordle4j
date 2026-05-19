@@ -97,12 +97,7 @@ public class WordleGame {
     }
 
     public boolean wordHasNotExistingChars(String word) {
-        for (int i = 0; i < word.length(); i++) {
-            if (notExistingSet.contains(word.charAt(i))) {
-                return true;
-            }
-        }
-        return false;
+        return word.chars().anyMatch(c -> notExistingSet.contains((char) c));
     }
 
     public String getSuggest() {
