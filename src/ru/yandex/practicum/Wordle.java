@@ -2,6 +2,7 @@ package ru.yandex.practicum;
 
 import ru.yandex.practicum.exception.DictionaryIsEmptyException;
 import ru.yandex.practicum.exception.GameException;
+import ru.yandex.practicum.exception.StepsLimitExceededException;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -41,9 +42,12 @@ public class Wordle {
                         System.out.println("Вы победили. До свидания.");
                         break;
                     }
+
                     System.out.println(game.getAnswerSymbols());
-                } catch (GameException ge) {
-                    System.out.println(ge.getMessage());
+                    System.out.println("Попыток осталось: " + game.getTries());
+                } catch (StepsLimitExceededException limitException) {
+                    System.out.println(limitException.getMessage());
+                    break;
                 }
             }
         } catch (IOException | DictionaryIsEmptyException e) {
@@ -61,7 +65,8 @@ public class Wordle {
             String input = scanner.nextLine().trim();
 
             if (input.isEmpty()) {
-                return null; //считаем, что просто нажал enter дял получения подсказки
+                //считаем, что подсказку хотят
+                return null;
             }
 
             if (input.length() != 5) {
