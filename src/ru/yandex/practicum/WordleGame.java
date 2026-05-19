@@ -2,15 +2,11 @@ package ru.yandex.practicum;
 
 import ru.yandex.practicum.exception.DictionaryIsEmptyException;
 import ru.yandex.practicum.exception.StepsLimitExceededException;
-import ru.yandex.practicum.exception.SuggestWinException;
 import ru.yandex.practicum.exception.WordNotFoundInDictionaryException;
 import ru.yandex.practicum.interfaces.LoggerInterface;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /*
 в этом классе хранится словарь и состояние игры
@@ -35,6 +31,7 @@ public class WordleGame {
     Map<String, Integer> usedSuggestions = new LinkedHashMap<String, Integer>();
     private final ArrayList<String> usedWords = new ArrayList<>();
     private final ArrayList<String> usedSymbols = new ArrayList<>();
+    private final Set<Character> notExistingSet = new HashSet<>();
 
     WordleGame(String dictionaryFile, int steps, LoggerInterface log) throws IOException, DictionaryIsEmptyException {
         this.dictionary = (new WordleDictionaryLoader(dictionaryFile)).loadWords();
@@ -81,7 +78,8 @@ public class WordleGame {
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < word.length(); i++) {
-            String letter = String.valueOf(word.charAt(i));
+            char wordChar = word.charAt(i);
+            String letter = String.valueOf(wordChar);
 
             if (word.charAt(i) == hiddenWord.charAt(i)) {
                 sb.append('+');
@@ -93,66 +91,58 @@ public class WordleGame {
             }
 
             sb.append('-');
+            notExistingSet.add(wordChar);
         }
         return sb;
     }
 
+    public boolean wordHasNotExistingChars(String word) {
+        for (int i = 0; i < word.length(); i++) {
+            if (notExistingSet.contains(word.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public String getSuggest() {
         List<String> allWords = dictionary.getAll();
+        String exactMatch = null;
+        List<String> suggestList = new ArrayList<>();
+        String suggest;
 
         for (String word : allWords) {
+            if (notExistingSet.isEmpty()) {
+                return word;
+            }
+
             if (usedSuggestions.containsKey(word)) {
                 continue;
             }
-            boolean valid = true;
 
-            for (int t = 0; t < usedWords.size(); t++) {
-                String used = usedWords.get(t);
-                String mask = usedSymbols.get(t);
-
-                for (int i = 0; i < word.length(); i++) {
-                    char c = word.charAt(i);
-                    char usedChar = used.charAt(i);
-                    char symbol = mask.charAt(i);
-
-                    if (symbol == '+') {
-                        if (c != usedChar) {
-                            valid = false;
-                            break;
-                        }
-                        continue;
-                    }
-                    if (symbol == '^') {
-                        if (c == usedChar || !word.contains("" + usedChar)) {
-                            valid = false;
-                            break;
-                        }
-                        continue;
-                    }
-                    if (symbol == '-') {
-                        if (word.contains("" + usedChar)) {
-                            valid = false;
-                            break;
-                        }
-                    }
-                }
-                if (!valid) break;
+            if (wordHasNotExistingChars(word)) {
+                continue;
             }
 
-            if (valid) {
-                usedSuggestions.put(word, usedSuggestions.getOrDefault(word, 0) + 1);
-                if (word.equals(hiddenWord)) {
-                    //не особо понял по тз что делать в этом случае, пусть подсказки выиграют
-                    throw new SuggestWinException("Подсказки угадали слово. Игра окончена.");
+            if (!hiddenWord.chars().allMatch(c -> word.contains(String.valueOf((char) c)))) {
+                //в word нет букв из hiddenWord
+                continue;
+            }
 
-                }
-                log.info("получена подсказка: " + word);
-                return word;
+            if (word.equals(hiddenWord)) {
+                exactMatch = hiddenWord;
+            } else {
+                suggestList.add(word);
             }
         }
-        log.info("не нашли подсказку, возможна проблема");
-        return null;
+        if (exactMatch != null) {
+            suggestList.add(exactMatch);
+        }
+
+        suggest = suggestList.getFirst();
+        usedSuggestions.put(suggest, usedSuggestions.getOrDefault(suggest, 0) + 1);
+        log.info("получена подсказка: " + suggest);
+        return suggest;
     }
 
     public int getTries() {

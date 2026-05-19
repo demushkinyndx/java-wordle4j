@@ -29,13 +29,18 @@ public class Wordle {
             log = new Logger(LOG_INFO_FILE, LOG_ERROR_FILE);
             WordleGame game = new WordleGame(DICTIONARY_FILE, STEPS, log);
             game.startGame();
-            System.out.println("Загадано слово из пяти букв (" + game.getHiddenWord() + "), у вас " + STEPS + " попыток.");
+            System.out.println("Загадано слово из пяти букв, у вас " + STEPS + " попыток.");
 
             while (true) {
                 String word = getStringInput("Введите слово из 5 букв (осталось попыток: " + game.getTries() + "): ");
                 try {
                     if (word == null) {
-                        System.out.println(game.getSuggest());
+                        String suggest = game.getSuggest();
+                        System.out.println(suggest);
+                        if (suggest.equals(game.getHiddenWord())) {
+                            //не особо понял по тз что делать в этом случае, пусть подсказки выиграют
+                            throw new SuggestWinException("Подсказки угадали слово. Игра окончена.");
+                        }
                         continue;
                     }
 
