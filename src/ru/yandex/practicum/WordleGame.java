@@ -2,11 +2,15 @@ package ru.yandex.practicum;
 
 import ru.yandex.practicum.exception.DictionaryIsEmptyException;
 import ru.yandex.practicum.exception.StepsLimitExceededException;
+import ru.yandex.practicum.exception.SuggestWinException;
 import ru.yandex.practicum.exception.WordNotFoundInDictionaryException;
+import ru.yandex.practicum.interfaces.LoggerInterface;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /*
 в этом классе хранится словарь и состояние игры
@@ -26,13 +30,16 @@ public class WordleGame {
     private String hiddenWord; //загаданное слово
     private int steps;
     private final WordleDictionary dictionary;
+    private final LoggerInterface log;
 
+    Map<String, Integer> usedSuggestions = new LinkedHashMap<String, Integer>();
     private final ArrayList<String> usedWords = new ArrayList<>();
     private final ArrayList<String> usedSymbols = new ArrayList<>();
 
-    WordleGame(String dictionaryFile, int steps) throws IOException, DictionaryIsEmptyException {
+    WordleGame(String dictionaryFile, int steps, LoggerInterface log) throws IOException, DictionaryIsEmptyException {
         this.dictionary = (new WordleDictionaryLoader(dictionaryFile)).loadWords();
         this.steps = steps;
+        this.log = log;
     }
 
     public String getHiddenWord() {
@@ -41,10 +48,14 @@ public class WordleGame {
 
     public void startGame() {
         hiddenWord = dictionary.getRandomWord();
+        log.info("Начало игры, загадано слово: " + hiddenWord);
     }
 
     public boolean isWordGuessed(String word) {
+        log.info("Введенное слово: " + word + " (ожидаем " + hiddenWord + "), осталось попыток: " + steps);
+
         if (hiddenWord.equals(word)) {
+            log.info("Слово угадано");
             return true;
         }
 
@@ -56,6 +67,8 @@ public class WordleGame {
         answerSymbols = sb.toString();
         usedWords.add(word);
         usedSymbols.add(answerSymbols);
+
+        log.info("символы слова: " + answerSymbols);
 
         steps--;
         if (steps < 1) {
@@ -73,13 +86,12 @@ public class WordleGame {
             if (word.charAt(i) == hiddenWord.charAt(i)) {
                 sb.append('+');
                 continue;
-            } else if (
-                    word.charAt(i) != hiddenWord.charAt(i)
-                            && hiddenWord.substring(i).contains(letter)
-            ) {
+            }
+            if (word.charAt(i) != hiddenWord.charAt(i) && hiddenWord.contains(letter)) {
                 sb.append('^');
                 continue;
             }
+
             sb.append('-');
         }
         return sb;
@@ -90,6 +102,9 @@ public class WordleGame {
         List<String> allWords = dictionary.getAll();
 
         for (String word : allWords) {
+            if (usedSuggestions.containsKey(word)) {
+                continue;
+            }
             boolean valid = true;
 
             for (int t = 0; t < usedWords.size(); t++) {
@@ -126,15 +141,24 @@ public class WordleGame {
             }
 
             if (valid) {
+                usedSuggestions.put(word, usedSuggestions.getOrDefault(word, 0) + 1);
+                if (word.equals(hiddenWord)) {
+                    //не особо понял по тз что делать в этом случае, пусть подсказки выиграют
+                    throw new SuggestWinException("Подсказки угадали слово. Игра окончена.");
+
+                }
+                log.info("получена подсказка: " + word);
                 return word;
             }
         }
+        log.info("не нашли подсказку, возможна проблема");
         return null;
     }
 
     public int getTries() {
         return steps;
     }
+
     public String getAnswerSymbols() {
         return answerSymbols;
     }

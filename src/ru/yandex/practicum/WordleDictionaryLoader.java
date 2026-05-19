@@ -33,7 +33,7 @@ public class WordleDictionaryLoader {
             throw new IOException(e);
         }
         if (dictionary.size() == 0) {
-            throw new DictionaryIsEmptyException("Словарь пуст");
+            throw new DictionaryIsEmptyException("Ошибка. Словарь пуст");
         }
         return dictionary;
     }

@@ -1,9 +1,6 @@
 package ru.yandex.practicum;
 
-import ru.yandex.practicum.exception.DictionaryIsEmptyException;
-import ru.yandex.practicum.exception.GameException;
-import ru.yandex.practicum.exception.StepsLimitExceededException;
-import ru.yandex.practicum.exception.WordNotFoundInDictionaryException;
+import ru.yandex.practicum.exception.*;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -21,13 +18,16 @@ public class Wordle {
 
     private static Scanner scanner;
     private static final String DICTIONARY_FILE = "words_ru.txt";
-    private static final int STEPS = 6; //кол-во попыток
+    private static final String LOG_ERROR_FILE = "log_error.txt";
+    private static final String LOG_INFO_FILE = "log_info.txt";
+    private static final int STEPS = 6;
 
     static void main(String[] args) {
-
+        Logger log = null;
         scanner = new Scanner(System.in);
         try {
-            WordleGame game = new WordleGame(DICTIONARY_FILE, STEPS);
+            log = new Logger(LOG_INFO_FILE, LOG_ERROR_FILE);
+            WordleGame game = new WordleGame(DICTIONARY_FILE, STEPS, log);
             game.startGame();
             System.out.println("Загадано слово из пяти букв (" + game.getHiddenWord() + "), у вас " + STEPS + " попыток.");
 
@@ -45,14 +45,24 @@ public class Wordle {
                     }
 
                     System.out.println(game.getAnswerSymbols());
-                } catch (StepsLimitExceededException limitException) {
-                    System.out.println(limitException.getMessage());
+                } catch (StepsLimitExceededException | SuggestWinException ex) {
+                    log.info(ex.getMessage());
+                    System.out.println(ex.getMessage());
                     break;
                 } catch (WordNotFoundInDictionaryException ex) {
+                    log.info(ex.getMessage());
                     System.out.println(ex.getMessage());
                 }
             }
-        } catch (IOException | DictionaryIsEmptyException e) {
+        } catch (LoggerCreationException e) {
+            System.out.println(e.getMessage());
+        } catch (IOException e) {
+            assert log != null;
+            log.error(e);
+            System.out.println(e.getMessage());
+        } catch (DictionaryIsEmptyException e) {
+            assert log != null;
+            log.error(e);
             System.out.println(e.getMessage());
         }
 
