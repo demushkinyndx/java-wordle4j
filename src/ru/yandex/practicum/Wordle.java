@@ -3,6 +3,7 @@ package ru.yandex.practicum;
 import ru.yandex.practicum.exception.DictionaryIsEmptyException;
 import ru.yandex.practicum.exception.GameException;
 import ru.yandex.practicum.exception.StepsLimitExceededException;
+import ru.yandex.practicum.exception.WordNotFoundInDictionaryException;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -31,7 +32,7 @@ public class Wordle {
             System.out.println("Загадано слово из пяти букв (" + game.getHiddenWord() + "), у вас " + STEPS + " попыток.");
 
             while (true) {
-                String word = getStringInput("Введите слово из 5 букв: ");
+                String word = getStringInput("Введите слово из 5 букв (осталось попыток: " + game.getTries() + "): ");
                 try {
                     if (word == null) {
                         System.out.println(game.getSuggest());
@@ -44,10 +45,11 @@ public class Wordle {
                     }
 
                     System.out.println(game.getAnswerSymbols());
-                    System.out.println("Попыток осталось: " + game.getTries());
                 } catch (StepsLimitExceededException limitException) {
                     System.out.println(limitException.getMessage());
                     break;
+                } catch (WordNotFoundInDictionaryException ex) {
+                    System.out.println(ex.getMessage());
                 }
             }
         } catch (IOException | DictionaryIsEmptyException e) {
