@@ -6,15 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Scanner;
 
-/*
-в главном классе нам нужно:
-    создать лог-файл (он должен передаваться во все классы)
-    создать загрузчик словарей WordleDictionaryLoader
-    загрузить словарь WordleDictionary с помощью класса WordleDictionaryLoader
-    затем создать игру WordleGame и передать ей словарь
-    вызвать игровой метод в котором в цикле опрашивать пользователя и передавать информацию в игру
-    вывести состояние игры и конечный результат
- */
 public class Wordle {
 
     private static Scanner scanner;
@@ -51,6 +42,7 @@ public class Wordle {
                     }
 
                     System.out.println(game.getAnswerSymbols());
+
                 } catch (StepsLimitExceededException | SuggestWinException ex) {
                     log.info(ex.getMessage());
                     System.out.println(ex.getMessage());
@@ -101,5 +93,4 @@ public class Wordle {
             return input;
         }
     }
-
 }
