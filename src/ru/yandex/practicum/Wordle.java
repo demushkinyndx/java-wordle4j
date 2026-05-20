@@ -63,15 +63,12 @@ public class Wordle {
         } catch (LoggerCreationException e) {
             System.out.println(e.getMessage());
         } catch (FileNotFoundException e) {
-            assert log != null;
             log.error(e);
             System.out.println(e.getMessage());
         } catch (IOException e) {
-            assert log != null;
             log.error(e);
             System.out.println(e.getMessage());
         } catch (DictionaryIsEmptyException e) {
-            assert log != null;
             log.error(e);
             System.out.println(e.getMessage());
         }

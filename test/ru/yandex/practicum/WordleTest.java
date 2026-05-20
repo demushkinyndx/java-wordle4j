@@ -102,10 +102,6 @@ class WordleTest {
         game.isWordGuessed(wrongWord);
         String symbols = game.getAnswerSymbols();
 
-        System.out.println(hidden);
-        System.out.println(wrongWord);
-        System.out.println(symbols);
-
         if (hidden.equals("перец")) {
             assertEquals("+----", symbols);
         }

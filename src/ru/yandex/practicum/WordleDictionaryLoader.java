@@ -19,7 +19,7 @@ public class WordleDictionaryLoader {
             String word;
             while ((word = fileReader.readLine()) != null) {
                 if (isValidWord(word)) {
-                    dictionary.add(word.toLowerCase().replace('ё', 'е'));
+                    dictionary.add(word);
                 }
             }
 

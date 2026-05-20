@@ -12,7 +12,7 @@ class WordleDictionaryTest {
         dictionary = new WordleDictionary();
         dictionary.add("привет");
         dictionary.add("слово");
-        dictionary.add("книга");
+        dictionary.add("ружьё");
     }
 
     @Test
@@ -20,7 +20,7 @@ class WordleDictionaryTest {
         assertEquals(3, dictionary.size());
         assertTrue(dictionary.getAll().contains("привет"));
         assertTrue(dictionary.getAll().contains("слово"));
-        assertTrue(dictionary.getAll().contains("книга"));
+        assertTrue(dictionary.getAll().contains("ружье"));
     }
 
     @Test

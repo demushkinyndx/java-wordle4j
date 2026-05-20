@@ -17,9 +17,7 @@ public class WordleGame {
     private final LoggerInterface log;
 
     Map<String, Integer> usedSuggestions = new LinkedHashMap<String, Integer>();
-    private final ArrayList<String> usedWords = new ArrayList<>();
-    private final ArrayList<String> usedSymbols = new ArrayList<>();
-    private final Set<Character> notExistingSet = new HashSet<>();
+    private final Set<Character> notExistingCharSet = new HashSet<>();
 
     WordleGame(String dictionaryFile, int steps, LoggerInterface log) throws IOException, DictionaryIsEmptyException {
         this.dictionary = (new WordleDictionaryLoader(dictionaryFile)).loadWords();
@@ -50,8 +48,6 @@ public class WordleGame {
 
         StringBuilder sb = getStringBuilderSymbols(word);
         answerSymbols = sb.toString();
-        usedWords.add(word);
-        usedSymbols.add(answerSymbols);
 
         log.info("символы слова: " + answerSymbols);
 
@@ -79,13 +75,13 @@ public class WordleGame {
             }
 
             sb.append('-');
-            notExistingSet.add(wordChar);
+            notExistingCharSet.add(wordChar);
         }
         return sb;
     }
 
     public boolean wordHasNotExistingChars(String word) {
-        return word.chars().anyMatch(c -> notExistingSet.contains((char) c));
+        return word.chars().anyMatch(c -> notExistingCharSet.contains((char) c));
     }
 
     public String getSuggest() {
@@ -95,7 +91,7 @@ public class WordleGame {
         String suggest;
 
         for (String word : allWords) {
-            if (notExistingSet.isEmpty()) {
+            if (notExistingCharSet.isEmpty()) {
                 return word;
             }
 
