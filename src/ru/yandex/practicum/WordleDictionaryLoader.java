@@ -7,7 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class WordleDictionaryLoader {
-    final private String dictionaryFile;
+    private final String dictionaryFile;
 
     public WordleDictionaryLoader(String dictionaryFile) {
         this.dictionaryFile = dictionaryFile;
