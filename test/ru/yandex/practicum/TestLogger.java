@@ -1,14 +1,18 @@
 package ru.yandex.practicum;
 
-import ru.yandex.practicum.interfaces.LoggerInterface;
+
+import java.io.PrintWriter;
+import java.io.Writer;
 
 // Тестовый логгер вместо моков
-class TestLogger implements LoggerInterface {
-    @Override
-    public void info(String message) {
+class TestLogger extends PrintWriter  {
+
+    public TestLogger(Writer out) {
+        super(out);
     }
 
     @Override
-    public void error(Throwable throwable) {
+    public void write(String message) {
+        //null
     }
 }

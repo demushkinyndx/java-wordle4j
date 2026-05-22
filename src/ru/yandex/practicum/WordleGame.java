@@ -3,9 +3,9 @@ package ru.yandex.practicum;
 import ru.yandex.practicum.exception.DictionaryIsEmptyException;
 import ru.yandex.practicum.exception.StepsLimitExceededException;
 import ru.yandex.practicum.exception.WordNotFoundInDictionaryException;
-import ru.yandex.practicum.interfaces.LoggerInterface;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class WordleGame {
@@ -14,12 +14,12 @@ public class WordleGame {
     private String hiddenWord; //загаданное слово
     private int steps;
     private final WordleDictionary dictionary;
-    private final LoggerInterface log;
+    private final PrintWriter log;
 
-    Map<String, Integer> usedSuggestions = new LinkedHashMap<String, Integer>();
+    private final Map<String, Integer> usedSuggestions = new LinkedHashMap<String, Integer>();
     private final Set<Character> notExistingCharSet = new HashSet<>();
 
-    WordleGame(String dictionaryFile, int steps, LoggerInterface log) throws IOException, DictionaryIsEmptyException {
+    WordleGame(String dictionaryFile, int steps, PrintWriter log) throws IOException, DictionaryIsEmptyException {
         this.dictionary = (new WordleDictionaryLoader(dictionaryFile)).loadWords();
         this.steps = steps;
         this.log = log;
@@ -31,14 +31,14 @@ public class WordleGame {
 
     public void startGame() {
         hiddenWord = dictionary.getRandomWord();
-        log.info("Начало игры, загадано слово: " + hiddenWord);
+        log.write("Начало игры, загадано слово: " + hiddenWord);
     }
 
     public boolean isWordGuessed(String word) {
-        log.info("Введенное слово: " + word + " (ожидаем " + hiddenWord + "), осталось попыток: " + steps);
+        log.write("Введенное слово: " + word + " (ожидаем " + hiddenWord + "), осталось попыток: " + steps);
 
         if (hiddenWord.equals(word)) {
-            log.info("Слово угадано");
+            log.write("Слово угадано");
             return true;
         }
 
@@ -49,7 +49,7 @@ public class WordleGame {
         StringBuilder sb = getStringBuilderSymbols(word);
         answerSymbols = sb.toString();
 
-        log.info("символы слова: " + answerSymbols);
+        log.write("символы слова: " + answerSymbols);
 
         steps--;
         if (steps < 1) {
@@ -118,9 +118,13 @@ public class WordleGame {
             suggestList.add(exactMatch);
         }
 
-        suggest = suggestList.getFirst();
-        usedSuggestions.put(suggest, usedSuggestions.getOrDefault(suggest, 0) + 1);
-        log.info("получена подсказка: " + suggest);
+        suggest = !suggestList.isEmpty() ? suggestList.getFirst() : null;
+        if (suggest != null) {
+            usedSuggestions.put(suggest, usedSuggestions.getOrDefault(suggest, 0) + 1);
+            log.write("получена подсказка: " + suggest);
+        } else {
+            log.write("подсказки нет");
+        }
         return suggest;
     }
 

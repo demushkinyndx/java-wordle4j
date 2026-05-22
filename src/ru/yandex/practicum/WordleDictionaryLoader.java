@@ -23,7 +23,7 @@ public class WordleDictionaryLoader {
                 }
             }
 
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new IOException(e);
         }
         if (dictionary.size() == 0) {

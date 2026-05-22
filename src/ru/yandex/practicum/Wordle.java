@@ -2,73 +2,72 @@ package ru.yandex.practicum;
 
 import ru.yandex.practicum.exception.*;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class Wordle {
 
-    private static Scanner scanner;
     private static final String DICTIONARY_FILE = "words_ru.txt";
-    private static final String LOG_ERROR_FILE = "log_error.txt";
-    private static final String LOG_INFO_FILE = "log_info.txt";
+    private static final String LOG_FILE = "log.txt";
     private static final int STEPS = 6;
 
     static void main(String[] args) {
-        Logger log = null;
-        scanner = new Scanner(System.in);
-        try {
-            log = new Logger(LOG_INFO_FILE, LOG_ERROR_FILE);
-            WordleGame game = new WordleGame(DICTIONARY_FILE, STEPS, log);
-            game.startGame();
-            System.out.println("Загадано слово из пяти букв, у вас " + STEPS + " попыток.");
-
-            while (true) {
-                String word = getStringInput("Введите слово из 5 букв (осталось попыток: " + game.getTries() + "): ");
+        try (Scanner scanner = new Scanner(System.in)) {
+            try (FileOutputStream fos = new FileOutputStream(LOG_FILE);
+                 Writer writer = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+                 PrintWriter log = new PrintWriter(writer, true)) {
                 try {
-                    if (word == null) {
-                        String suggest = game.getSuggest();
-                        System.out.println(suggest);
-                        if (suggest.equals(game.getHiddenWord())) {
-                            //не особо понял по тз что делать в этом случае, пусть подсказки выиграют
-                            throw new SuggestWinException("Подсказки угадали слово. Игра окончена.");
+                    WordleGame game = new WordleGame(DICTIONARY_FILE, STEPS, log);
+                    game.startGame();
+                    System.out.println("Загадано слово из пяти букв, у вас " + STEPS + " попыток.");
+
+                    while (true) {
+                        String word = getStringInput("Введите слово из 5 букв (осталось попыток: " + game.getTries() + "): ", scanner);
+                        try {
+                            if (word == null) {
+                                String suggest = game.getSuggest();
+                                System.out.println(suggest != null ? suggest : "подсказка не найдена");
+
+                                if (suggest.equals(game.getHiddenWord())) {
+                                    //не особо понял по тз что делать в этом случае, пусть подсказки выиграют
+                                    throw new SuggestWinException("Подсказки угадали слово. Игра окончена.");
+                                }
+                                continue;
+                            }
+
+                            if (game.isWordGuessed(word)) {
+                                System.out.println("Вы победили. До свидания.");
+                                break;
+                            }
+
+                            System.out.println(game.getAnswerSymbols());
+
+                        } catch (StepsLimitExceededException | SuggestWinException ex) {
+                            log.write(ex.getMessage());
+                            System.out.println(ex.getMessage());
+                            break;
+                        } catch (WordNotFoundInDictionaryException ex) {
+                            log.write(ex.getMessage());
+                            System.out.println(ex.getMessage());
                         }
-                        continue;
                     }
-
-                    if (game.isWordGuessed(word)) {
-                        System.out.println("Вы победили. До свидания.");
-                        break;
-                    }
-
-                    System.out.println(game.getAnswerSymbols());
-
-                } catch (StepsLimitExceededException | SuggestWinException ex) {
-                    log.info(ex.getMessage());
-                    System.out.println(ex.getMessage());
-                    break;
-                } catch (WordNotFoundInDictionaryException ex) {
-                    log.info(ex.getMessage());
-                    System.out.println(ex.getMessage());
+                } catch (RuntimeException | IOException e) {
+                    e.printStackTrace(log);
+                    System.out.println(e.getMessage());
                 }
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                e.printStackTrace();
             }
-        } catch (LoggerCreationException e) {
+
+        } catch (Exception e) {
             System.out.println(e.getMessage());
-        } catch (FileNotFoundException e) {
-            log.error(e);
-            System.out.println(e.getMessage());
-        } catch (IOException e) {
-            log.error(e);
-            System.out.println(e.getMessage());
-        } catch (DictionaryIsEmptyException e) {
-            log.error(e);
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
-
-
     }
 
-    public static String getStringInput(String message) {
+    public static String getStringInput(String message, Scanner scanner) {
         while (true) {
             if (message != null && !message.isEmpty()) {
                 System.out.println(message);

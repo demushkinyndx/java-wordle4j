@@ -5,7 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import ru.yandex.practicum.exception.*;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -21,6 +22,8 @@ class WordleTest {
     @BeforeEach
     void setUp() throws IOException, DictionaryIsEmptyException {
         Path dictFile = tempDir.resolve("words_ru.txt");
+        Path logFile = tempDir.resolve("log_test.txt");
+
 
         Files.writeString(dictFile, "кот\n"
                 + "мама\n"
@@ -36,7 +39,10 @@ class WordleTest {
                 + "нора\n"
                 + "луна\n");
 
-        TestLogger testLogger = new TestLogger();
+        FileOutputStream fos = new FileOutputStream(logFile.toFile());
+        Writer writer = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+        TestLogger testLogger = new TestLogger(writer);
+
         game = new WordleGame(dictFile.toString(), 6, testLogger);
         game.startGame();
     }
